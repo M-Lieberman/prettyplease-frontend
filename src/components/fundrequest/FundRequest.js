@@ -1,67 +1,41 @@
-import React, { Component, useState } from 'react';
+import React, { useState, useContext } from 'react';
+import { useAuth } from "../Firebase/AuthContext";
+
 import './FundRequest.css';
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal'
+import InputGroup from 'react-bootstrap/InputGroup'
+import ModalConfirmationRequest from './ModalConfirmationRequest';
 
 function FundRequest() {
     // Variable to control the modal
-    const [smShow, setSmShow] = useState(false);
+    const [modalShow, setModalShow] = React.useState(false);
+    const { currentUserID } = useAuth();
 
-    const [amount, setAmount] = useState("");
-    const [description, setDescription] = useState("");
-    const [isSingleEvent, setIsSingleEvent] = useState("");
-    const [duration, setDuration] = useState(0);
+    const [amountRequested, setAmountRequested] = useState("");
+    const [eventDescription, setEventDescription] = useState("");
+    const [isSingleEvent, setIsSingleEvent] = useState(false);
+    const [durationInYears, setDurationInYears] = useState(0);
     const [incentive, setIncentive] = useState("");
 
-    const handlerAmount = (event) => {
-        setAmount(Number(event.target.value));
-    }
 
-    const handlerDescription = (event) => {
-        setDescription(event.target.value);
-    }
+    const handlerISingleEvent = () => {
+        setIsSingleEvent(true);
+        setDurationInYears(0);
+    };
 
-    const handlerIncentive = (event) => {
-        setIncentive(event.target.value);
-    }
-
-    const handlerDuration = (event) => {
-        setDuration(Number(event.target.value));
-        // setDuration(Number(event.target.value));
-    }
-
-    const handlerIsSingleEvent = (event) => {
-        setIsSingleEvent(event.target.value);
-        // setDuration(Number(event.target.value));
-    }
-
-    const handlerRegister = (event) => {
-        const charityRequest = {
-            amount: amount,
-            description: description,
-            incentive: incentive,
-            isSingleEvent:isSingleEvent,
-            duration: duration,
-        }
-
-        console.log(charityRequest);
-        setSmShow(true)
-        setAmount("");
-        setDescription("");
-        setIncentive("");
-        setIsSingleEvent("");
-        setDuration(0);
+    const handlerDurationInYears = () => {
+        setIsSingleEvent(false);
     };
 
     return (
         <div className="FundRequest">
-            
+
             <Container className="container-FundRequest">
-                
+
                 {/* Title */}
                 <Row className="page-heading">
                     <Col xs={12} md={{ span: 4, offset: 4 }}>
@@ -71,21 +45,25 @@ function FundRequest() {
                     </Col>
                 </Row>
 
-                {/* Fund Request form */}       
+                {/* Fund Request form */}
                 <Form.Row >
                     <Col md={{ span: 6, offset: 3 }}>
-                    
-                        <Form onSubmit={handlerRegister}>
-                            
+                        <Form >
                             {/* Amount Fund request field*/}
                             <Form.Group controlId="exampleForm.ControlInput1">
                                 <Form.Label className="text-primary">Amount:</Form.Label>
-                                <Form.Control
-                                    required
-                                    type="number"
-                                    placeholder="£1,000"
-                                    onChange={handlerAmount}
-                                    value={amount} />
+                                <InputGroup className="mb-3">
+                                    <InputGroup.Prepend>
+                                        <InputGroup.Text>£</InputGroup.Text>
+                                    </InputGroup.Prepend>
+                                    <Form.Control
+                                        required
+                                        type="number"
+                                        placeholder="1000"
+                                        onChange={(event) => setAmountRequested(Number(event.target.value))}
+                                        value={amountRequested}
+                                    />
+                                </InputGroup>
                             </Form.Group>
 
                             {/* Description Fund request field*/}
@@ -93,12 +71,11 @@ function FundRequest() {
                                 <Form.Label className="text-primary">Description:</Form.Label>
                                 <Form.Control as="textarea" rows="3"
                                     required
-                                    onChange={handlerDescription}
-                                    value={description}
+                                    onChange={(event) => setEventDescription(event.target.value)}
+                                    value={eventDescription}
                                 />
                             </Form.Group>
 
-                          
                             {/* Duration radio buttons */}
                             <fieldset>
                                 <Form.Group as={Row}>
@@ -107,62 +84,44 @@ function FundRequest() {
                                         </Form.Label>
                                     <Col sm={10}>
 
-                                        {/* Radio button Duration One-Off */}  
+                                        {/* Radio button Customise Duration. If the user press this option, the duration field is taken*/}
+                                        <Row>
+                                            {/* <Form inline>  */}
+                                            <div className="form-inline">
+                                                <Form.Check
+                                                    type="radio"
+                                                    aria-label="Customise Duration"
+                                                    name="formHorizontalRadios"
+                                                    id="radioDurationCustomiseDuration"
+                                                    onChange={handlerDurationInYears}
+                                                    defaultChecked
+                                                />
+                                                <InputGroup className="mb-3">
+                                                    <Form.Control
+                                                        type="number"
+                                                        placeholder="1"
+                                                        onChange={(event) => setDurationInYears(Number(event.target.value))}
+                                                        vale={durationInYears}
+                                                    />
+                                                    <InputGroup.Append>
+                                                        <InputGroup.Text>years</InputGroup.Text>
+                                                    </InputGroup.Append>
+                                                </InputGroup>
+                                            </div>
+                                        </Row>
+
+                                        {/* Radio button Duration One-Off */}
                                         <Row>
                                             <Form.Check
                                                 type="radio"
                                                 label="One-Off"
                                                 name="formHorizontalRadios"
                                                 id="radioDurationOneOff"
-                                                value={true}
-                                                // value="0"
-                                                onChange={handlerIsSingleEvent}
+                                                onChange={handlerISingleEvent}
                                             />
                                         </Row>
-
-                                        {/* Radio button Customise Duration. If the user press this option, the duration field is taken*/}  
-                                        <Row>
-                                            <Form.Check
-                                                type="radio"
-                                                aria-label="Customise Duration"
-                                                name="formHorizontalRadios"
-                                                id="radioDurationCustomiseDuration"
-                                                value={false}
-                                                // value="1"
-                                                onChange={handlerIsSingleEvent}
-                                            />
-
-                                            
-                                            {/* Form inline to show the radio button, textbox and label in the same line */}
-                                            <Form inline> 
-
-                                                {/* Customize duration textbox */}
-                                                <Form.Label htmlFor="inlineFormInputName2" srOnly>
-                                                    CustomiseDuration
-                                                </Form.Label>
-                                                <Form.Control
-                                                    size="sm"
-                                                    type="number"
-                                                    className="mb-2 mr-sm-2"
-                                                    id="inlineFormInputName2"
-                                                    placeholder="1"
-                                                    onChange={handlerDuration}
-                                                    vale={duration}
-                                                />
-
-                                                {/* Label years */}
-                                                <Form.Label className="my-1 mr-2" htmlFor="inlineFormCustomSelectPref">
-                                                    years
-                                                </Form.Label>
-
-                                            {/* End of the Form inline */}
-                                            </Form>
-
-                                        </Row>
-
                                     </Col>
-
-                                {/* End of the radio button section */}
+                                    {/* End of the radio button section */}
                                 </Form.Group>
                             </fieldset>
 
@@ -171,39 +130,33 @@ function FundRequest() {
                                 <Form.Label className="text-primary">Incentive:</Form.Label>
                                 <Form.Control as="textarea" rows="3" placeholder="Write here the incentive you offer (sponsor branding, vouchers, sampling opportunities,...)"
                                     required
-                                    onChange={handlerIncentive}
+                                    onChange={(event) => setIncentive(event.target.value)}
                                     value={incentive}
                                 />
                             </Form.Group>
-
-
-                        {/* End of the form */}
+                            {/* End of the form */}
                         </Form>
-
-
                     </Col>
                 </Form.Row>
- 
-                {/* Button register*/}
+
+                {/* Button submit. Call a customize Modal to review the form*/}
                 <Row>
                     <Col md={{ span: 2, offset: 8 }}>
-                        <Button onClick={handlerRegister} variant="outline-primary" type="submit">Submit</Button>
-                        <Modal
-                                    size="sm"
-                                    show={smShow}
-                                    onHide={() => setSmShow(false)}
-                                    aria-labelledby="example-modal-sizes-title-sm"
-                                >
-                                    <Modal.Header closeButton>
-                                    <Modal.Title id="example-modal-sizes-title-sm">
-                                        Congratulations!
-                                    </Modal.Title>
-                                    </Modal.Header>
-                                    <Modal.Body>Your request has been saved</Modal.Body>
-                                </Modal>
+                        <Button onClick={() => setModalShow(true)} variant="outline-primary" type="submit">Submit</Button>
+                        <ModalConfirmationRequest show={modalShow} onHide={() => setModalShow(false)}
+                            charitydetails={{
+                                charityId: currentUserID,
+                                eventDescription: eventDescription,
+                                incentive: incentive,
+                                amountRequested: amountRequested,
+                                amountAgreed: amountRequested,
+                                isSingleEvent: isSingleEvent,
+                                durationInYears: durationInYears,
+                                agreedDurationInYears: durationInYears,
+                                requestStatus: "OPEN"
+                            }} />
                     </Col>
                 </Row>
-
             </Container>
         </div>
     );

@@ -7,34 +7,31 @@ import { getFormattedAmount, getFormattedDuration } from '../requestformatter';
 
 function RequestDisplayCard({ cardData }) {
 
-    const amount = getFormattedAmount(cardData.amount);
-    const duration = getFormattedDuration(cardData.duration);
 
-    return (
-        <Link to={`/ForSponsors/${cardData.requestId}`}>
-            <Row
-                className="no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+    return cardData.map((card, index) => (
+        <Link to={`/ForSponsors/${card.requestId}`} key={card.requestId} >
+            <Row className="no-gutters border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
                 <Col className="col-auto flex-column">
                     <img
-                        src={cardData.image}
+                        src={card.charityImageUrl}
                         width="200"
                         height="200"
-                        alt={cardData.charityName}
+                        alt={card.charityName}
                     />
                 </Col>
                 <Col className="col p-4 d-flex flex-column position-static">
                     <Card.Body>
-                        <Card.Title>{cardData.charityName}</Card.Title>
-                        <Card.Text >{cardData.description}</Card.Text>
+                        <Card.Title>{card.charityName}</Card.Title>
+                        <Card.Text >{card.eventDescription}</Card.Text>
                         <Row className="pt-2 pb-2">
                             <Col>
                                 <Card.Text>
-                                    Amount: {amount}
+                                    Amount: {getFormattedAmount(card.amountRequested)}
                                 </Card.Text>
                             </Col>
                             <Col>
                                 <Card.Text>
-                                    Duration: {duration}
+                                    Duration: {card.durationInYears=== 0 ? 'One-Off':getFormattedDuration(card.durationInYears)}
                                 </Card.Text>
 
                             </Col>
@@ -43,7 +40,7 @@ function RequestDisplayCard({ cardData }) {
                 </Col>
             </Row>
         </Link>
-    );
+    ));
 }
 
 export default RequestDisplayCard;
